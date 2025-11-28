@@ -315,36 +315,39 @@ def main():
     st.write("Тестовый текст")
 
     tg_id, full_name = authenticate_user()
+    
+    st.write(f"Дaнные: {tg_id}, {full_name}")
 
-    # Ensure user exists
-    session = SessionLocal()
-    user = session.query(User).filter_by(tg_id=tg_id).first()
+    # # Ensure user exists
+    # session = SessionLocal()
+    # user = session.query(User).filter_by(tg_id=tg_id).first()
 
-    if not user:
-        user = User(tg_id=tg_id, name=full_name)
-        session.add(user)
-        session.commit()
+    # if not user:
+    #     user = User(tg_id=tg_id, name=full_name)
+    #     session.add(user)
+    #     session.commit()
 
-    # Bottom menu
-    selected = option_menu(
-        None,
-        ["Транзакции", "Категории", "Профиль"],
-        icons=["cash-stack", "list-ul", "person"],
-        menu_icon="cast",
-        default_index=0,
-        orientation="horizontal"
-    )
+    # # Bottom menu
+    # selected = option_menu(
+    #     None,
+    #     ["Транзакции", "Категории", "Профиль"],
+    #     icons=["cash-stack", "list-ul", "person"],
+    #     menu_icon="cast",
+    #     default_index=0,
+    #     orientation="horizontal"
+    # )
 
-    if selected == "Транзакции":
-        page_transactions(user.id)
-    elif selected == "Категории":
-        page_categories(user.id)
-    elif selected == "Профиль":
-        page_profile(tg_id, full_name)
+    # if selected == "Транзакции":
+    #     page_transactions(user.id)
+    # elif selected == "Категории":
+    #     page_categories(user.id)
+    # elif selected == "Профиль":
+    #     page_profile(tg_id, full_name)
 
 
 if __name__ == "__main__":
     main()
+
 
 
 
