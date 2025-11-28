@@ -74,11 +74,20 @@ def authenticate_user():
     Считывает данные Telegram WebApp из query params.
     Mini App внутри Telegram передаёт user={...}
     """
+
     params = st.query_params
 
-    if "user" not in params:
+    user_json = params.get("user", None)
+    if user_json:
+        try:
+            user_data = json.loads(user_json)
+            st.session_state["user"] = user_data
+        except:
+            st.error("Ошибка чтения данных пользователя")
+    else:
         st.error("⚠ Авторизация не выполнена. Mini App должен запускаться через Telegram.")
         st.stop()
+
 
     try:
         tg_user_raw = params.get("user")
@@ -326,4 +335,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
