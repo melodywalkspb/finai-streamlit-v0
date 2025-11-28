@@ -8,6 +8,7 @@ st.set_page_config(page_title="Secure Mini App", layout="wide")
 
 load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY").encode()
+st.write(f"SK: {SECRET_KEY}")
 
 st.title("🔐 Secure Telegram Mini App")
 
@@ -30,6 +31,9 @@ params = st.query_params
 user_id = params.get("id")
 signature = params.get("sig")
 
+st.write(f"SK: {user_id}")
+st.write(f"SK: {signature}")
+
 if not user_id or not signature:
     st.error("❌ Нет данных. Открой Mini App через Telegram бота.")
     st.stop()
@@ -48,3 +52,4 @@ st.success("✔ Доступ разрешён")
 
 st.write("### 👤 Telegram User")
 st.write(f"**User ID:** `{user_id}`")
+
