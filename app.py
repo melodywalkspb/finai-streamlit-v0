@@ -12,6 +12,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 from streamlit_option_menu import option_menu
 import plotly.express as px
 
+
 # Load env variables
 load_dotenv()
 
@@ -273,6 +274,25 @@ def page_profile(tg_id, full_name):
 def main():
     apply_css()
 
+    # ВСТАВЬ ЭТО САМЫМ ПЕРВЫМ
+    st.markdown("""
+        <script>
+        if (window.Telegram && window.Telegram.WebApp) {
+            const tg = window.Telegram.WebApp;
+            tg.expand();
+        
+            const user = tg.initDataUnsafe?.user;
+            if (user) {
+                const params = new URLSearchParams(window.location.search);
+                params.set("user", JSON.stringify(user));
+        
+                const newUrl = window.location.pathname + '?' + params.toString();
+                window.history.replaceState(null, "", newUrl);
+            }
+        }
+        </script>
+    """, unsafe_allow_html=True)
+
     st.markdown("## 🧠 Личный финансовый AI-ассистент")
 
     tg_id, full_name = authenticate_user()
@@ -306,3 +326,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
