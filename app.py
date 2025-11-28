@@ -1,61 +1,50 @@
 import streamlit as st
-import hashlib
-import hmac
 import os
+import hmac
+import hashlib
 from dotenv import load_dotenv
+from database import get_user, get_transactions, get_categories
 
 st.set_page_config(page_title="Secure Mini App", layout="wide")
-
 load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY").encode()
-STREAMLIT_SERVER_PORT = os.getenv("STREAMLIT_SERVER_PORT").encode()
 
-st.write(f"SECRET_KEY: {SECRET_KEY}")
-st.write(f"STREAMLIT_SERVER_PORT: {STREAMLIT_SERVER_PORT}")
-
-st.title("🔐 Secure Telegram Mini App") 
-
-
-def verify_signature(user_id: str, signature: str) -> bool:
-    """
-    Проверяем подпись HMAC, созданную ботом.
-    """
-    expected_sig = hmac.new(
-        SECRET_KEY, user_id.encode(), hashlib.sha256
-    ).hexdigest()
-
-    return hmac.compare_digest(expected_sig, signature)
-
+st.title("💰 Финансовый ассистент (Mini App)")
 
 # -------------------------------
-# 1. Получаем параметры из URL
+# Получаем параметры из URL
 # -------------------------------
-params = st.query_params
-user_id = params.get("id")
-signature = params.get("sig")
+params = st.experimental_get_query_params()
+user_id = params.get("id", [None])[0]
+sig = params.get("sig", [None])[0]
 
-st.write(f"SK: {user_id}")
-st.write(f"SK: {signature}")
-
-if not user_id or not signature:
-    st.error("❌ Нет данных. Открой Mini App через Telegram бота.")
+if not user_id or not sig:
+    st.error("Открой Mini App через Telegram бота")
     st.stop()
 
 # -------------------------------
-# 2. Проверяем подпись
+# Проверка подписи HMAC
 # -------------------------------
-if not verify_signature(user_id, signature):
-    st.error("⛔ Подпись недействительна! Доступ запрещён.")
+expected_sig = hmac.new(SECRET_KEY, str(user_id).encode(), hashlib.sha256).hexdigest()
+if not hmac.compare_digest(expected_sig, sig):
+    st.error("Подпись недействительна! Доступ запрещён.")
     st.stop()
 
+user_id = int(user_id)
+user = get_user(user_id)
+st.success(f"Привет, {user['name']}! Доступ разрешён ✅")
+
 # -------------------------------
-# 3. Выводим данные
+# Показ категорий
 # -------------------------------
-st.success("✔ Доступ разрешён")
+st.subheader("Категории")
+cats = get_categories(user_id)
+st.write([c["name"] for c in cats])
 
-st.write("### 👤 Telegram User")
-st.write(f"**User ID:** `{user_id}`")
-
-
-
-
+# -------------------------------
+# Показ транзакций
+# -------------------------------
+st.subheader("Транзакции")
+txs = get_transactions(user_id)
+for tx in txs:
+    st.write(f"{tx['date']} — {tx['category']} — {tx['amount']} ₽")
