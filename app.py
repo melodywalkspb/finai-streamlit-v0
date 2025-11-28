@@ -304,6 +304,9 @@ def main():
 
     st.markdown("## 🧠 Личный финансовый AI-ассистент")
 
+    st.write("User data:", st.session_state.get("user"))
+    st.write("Тестовый текст")
+
     tg_id, full_name = authenticate_user()
 
     # Ensure user exists
@@ -335,5 +338,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
