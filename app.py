@@ -76,17 +76,19 @@ def authenticate_user():
     """
 
     params = st.query_params
-
-    user_json = params.get("user", None)
+    user_json = params.get("user")
+    
     if user_json:
         try:
             user_data = json.loads(user_json)
             st.session_state["user"] = user_data
         except:
-            st.error("Ошибка чтения данных пользователя")
+            st.error("Ошибка декодирования данных пользователя")
+            st.stop()
     else:
         st.error("⚠ Авторизация не выполнена. Mini App должен запускаться через Telegram.")
         st.stop()
+
 
 
     try:
@@ -283,28 +285,33 @@ def page_profile(tg_id, full_name):
 def main():
     apply_css()
 
-    # ВСТАВЬ ЭТО САМЫМ ПЕРВЫМ
-    st.markdown("""
+    # ВСТАВИТЬ САМЫМ ПЕРВЫМ
+    components.html("""
         <script>
-        if (window.Telegram && window.Telegram.WebApp) {
-            const tg = window.Telegram.WebApp;
-            tg.expand();
+            document.addEventListener("DOMContentLoaded", function() {
+                try {
+                    const tg = window.Telegram.WebApp;
+                    tg.expand();
         
-            const user = tg.initDataUnsafe?.user;
-            if (user) {
-                const params = new URLSearchParams(window.location.search);
-                params.set("user", JSON.stringify(user));
+                    const user = tg.initDataUnsafe?.user;
         
-                const newUrl = window.location.pathname + '?' + params.toString();
-                window.history.replaceState(null, "", newUrl);
-            }
-        }
+                    if (user) {
+                        const params = new URLSearchParams(window.location.search);
+                        params.set("user", JSON.stringify(user));
+                        const newUrl = window.location.pathname + '?' + params.toString();
+                        window.history.replaceState(null, "", newUrl);
+                    }
+                } catch (e) {
+                    console.log("Telegram WebApp not available:", e);
+                }
+            });
         </script>
-    """, unsafe_allow_html=True)
+    """, height=0)
 
     st.markdown("## 🧠 Личный финансовый AI-ассистент")
 
     st.write("User data:", st.session_state.get("user"))
+    st.write("User:", st.session_state.get("user"))
     st.write("Тестовый текст")
 
     tg_id, full_name = authenticate_user()
@@ -338,6 +345,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
