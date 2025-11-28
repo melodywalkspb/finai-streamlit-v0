@@ -1,62 +1,50 @@
 import streamlit as st
-import streamlit.components.v1 as components
-import json
+import hashlib
+import hmac
+import os
+from dotenv import load_dotenv
 
-st.set_page_config(page_title="Telegram User Test", layout="wide")
+st.set_page_config(page_title="Secure Mini App", layout="wide")
 
-st.title("Telegram Mini App — User Debug")
+load_dotenv()
+SECRET_KEY = os.getenv("SECRET_KEY").encode()
 
-# -------------------------------
-# Inject JS to extract Telegram WebApp user data
-# -------------------------------
-components.html("""
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        try {
-            const tg = window.Telegram.WebApp;
-            tg.expand();
+st.title("🔐 Secure Telegram Mini App")
 
-            const user = tg.initDataUnsafe?.user;
 
-            if (user) {
-                const params = new URLSearchParams(window.location.search);
-                params.set("user", JSON.stringify(user));
-                const newUrl = window.location.pathname + '?' + params.toString();
-                window.history.replaceState(null, "", newUrl);
-            } else {
-                console.log("User object not available");
-            }
-        } catch (e) {
-            console.log("Telegram WebApp not available:", e);
-        }
-    });
-</script>
-""", height=0)
+def verify_signature(user_id: str, signature: str) -> bool:
+    """
+    Проверяем подпись HMAC, созданную ботом.
+    """
+    expected_sig = hmac.new(
+        SECRET_KEY, user_id.encode(), hashlib.sha256
+    ).hexdigest()
+
+    return hmac.compare_digest(expected_sig, signature)
+
 
 # -------------------------------
-# Read user from query params
+# 1. Получаем параметры из URL
 # -------------------------------
 params = st.query_params
-user_json = params.get("user")
+user_id = params.get("id")
+signature = params.get("sig")
 
-if not user_json:
-    st.error("⚠ Нет данных Telegram WebApp. Mini App должен быть открыт через Telegram.")
-    st.stop()
-
-try:
-    user = json.loads(user_json)
-except:
-    st.error("Ошибка обработки Telegram user JSON.")
+if not user_id or not signature:
+    st.error("❌ Нет данных. Открой Mini App через Telegram бота.")
     st.stop()
 
 # -------------------------------
-# Output user data
+# 2. Проверяем подпись
 # -------------------------------
-st.subheader("Полученные данные пользователя Telegram:")
-st.json(user)
+if not verify_signature(user_id, signature):
+    st.error("⛔ Подпись недействительна! Доступ запрещён.")
+    st.stop()
 
-st.write(f"**ID:** {user.get('id')}")
-st.write(f"**Имя:** {user.get('first_name')}")
-st.write(f"**Фамилия:** {user.get('last_name')}")
-st.write(f"**Юзернейм:** @{user.get('username')}")
-st.write(f"**Язык:** {user.get('language_code')}")
+# -------------------------------
+# 3. Выводим данные
+# -------------------------------
+st.success("✔ Доступ разрешён")
+
+st.write("### 👤 Telegram User")
+st.write(f"**User ID:** `{user_id}`")
