@@ -11,7 +11,7 @@ SECRET_KEY = os.getenv("SECRET_KEY").encode()
 st.write(f"SECRET_KEY: {SECRET_KEY}")
 st.write(f"STREAMLIT_SERVER_PORT: {STREAMLIT_SERVER_PORT}")
 
-st.title("🔐 Secure Telegram Mini App")STREAMLIT_SERVER_PORT 
+st.title("🔐 Secure Telegram Mini App") 
 
 
 def verify_signature(user_id: str, signature: str) -> bool:
@@ -53,5 +53,6 @@ st.success("✔ Доступ разрешён")
 
 st.write("### 👤 Telegram User")
 st.write(f"**User ID:** `{user_id}`")
+
 
 
